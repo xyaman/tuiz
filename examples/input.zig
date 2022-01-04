@@ -39,8 +39,7 @@ pub fn main() !void {
                 .key => |k| switch (k) {
                     .ctrlC => running = false,
                     .char => |c| try text.append(c),
-                    // same as backspace
-                    .ctrlH => _ = text.popOrNull(),
+                    .delete => _ = text.popOrNull(),
                     else => {},
                 },
                 else => {},
