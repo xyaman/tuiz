@@ -74,14 +74,6 @@ pub const Terminal = struct {
         try out.print("{s}", .{cursor.hide()});
         defer out.print("{s}", .{cursor.show()}) catch {};
 
-        // var y: usize = 0;
-        // while (y < current_buffer.size.height) : (y += 1) {
-        //     var x: usize = 0;
-        //     while (x < current_buffer.size.width) : (x += 1) {
-        //         try out.print("{s}{u}", .{ cursor.goTo(x + 1, y + 1), current_buffer.inner[current_buffer.size.width * y + x] });
-        //     }
-        // }
-
         for (updates.items) |update| {
             try out.print("{s}{u}", .{ cursor.goTo(update.x + 1, update.y + 1), update.c.* });
         }
@@ -120,7 +112,7 @@ pub const Buffer = struct {
     }
 
     pub fn reset(self: *Self) void {
-        std.mem.set(u21, self.inner, 0);
+        std.mem.set(u21, self.inner, ' ');
     }
 
     /// Returns a reference of a cell based on col and row.

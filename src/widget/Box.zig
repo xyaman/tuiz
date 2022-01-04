@@ -4,9 +4,9 @@ const Buffer = @import("../main.zig").Buffer;
 const Rect = @import("../main.zig").Rect;
 const Widget = @import("Widget.zig");
 
-const Self = @This();
+const chars = @import("chars.zig");
 
-const single = [6]u21{ '┏', '┓', '┗', '┛', '━', '┃' };
+const Self = @This();
 
 widget: Widget = .{ .drawFn = draw, .sizeFn = size },
 size: Rect = undefined,
@@ -36,18 +36,18 @@ pub fn draw(widget: *Widget, buf: *Buffer) void {
     var x: usize = self.size.col;
 
     // borders
-    buf.getRef(x, row).* = single[0];
-    buf.getRef(x + self.size.w, row).* = single[1];
+    buf.getRef(x, row).* = chars.ULCorner;
+    buf.getRef(x + self.size.w, row).* = chars.URCorner;
 
-    buf.getRef(x, self.size.h + self.size.row).* = single[2];
-    buf.getRef(x + self.size.w, self.size.h + self.size.row).* = single[3];
+    buf.getRef(x, self.size.h + self.size.row).* = chars.LLCorner;
+    buf.getRef(x + self.size.w, self.size.h + self.size.row).* = chars.LRCorner;
 
     row += 1;
 
     // vertical lines
     while (row < self.size.h + self.size.row) : (row += 1) {
-        buf.getRef(x, row).* = single[5];
-        buf.getRef(x + self.size.w, row).* = single[5];
+        buf.getRef(x, row).* = chars.VLine;
+        buf.getRef(x + self.size.w, row).* = chars.VLine;
     }
 
     // horizontal
@@ -56,8 +56,8 @@ pub fn draw(widget: *Widget, buf: *Buffer) void {
         var y: usize = self.size.row;
 
         while (col < self.size.w + self.size.col) : (col += 1) {
-            buf.getRef(col, y).* = single[4];
-            buf.getRef(col, y + self.size.h).* = single[4];
+            buf.getRef(col, y).* = chars.HLine;
+            buf.getRef(col, y + self.size.h).* = chars.HLine;
         }
     }
 

@@ -19,11 +19,19 @@ pub fn build(b: *std.build.Builder) void {
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&main_tests.step);
 
-    // examples
-    const color = b.addExecutable("example", "examples/main.zig");
-    color.setTarget(target);
-    deps.addAllTo(color);
+    // main
+    const main_ex = b.addExecutable("example", "examples/main.zig");
+    main_ex.setTarget(target);
+    deps.addAllTo(main_ex);
 
-    const color_step = b.step("example", "Run color example");
-    color_step.dependOn(&color.run().step);
+    const main_ex_step = b.step("example", "Run main_ex example");
+    main_ex_step.dependOn(&main_ex.run().step);
+
+    // input
+    const input_ex = b.addExecutable("example", "examples/input.zig");
+    input_ex.setTarget(target);
+    deps.addAllTo(input_ex);
+
+    const input_ex_step = b.step("input", "Run input_ex example");
+    input_ex_step.dependOn(&input_ex.run().step);
 }
