@@ -43,14 +43,13 @@ pub fn draw(widget: *Widget, buf: *Buffer) void {
     box.draw(buf);
 
     // draw text
-
     if (self.text) |text| {
         const initial_col = self.size.col + 1;
         var col = initial_col;
         var row = self.size.row + 1;
 
         while (col < initial_col + text.len) : (col += 1) {
-            buf.getRef(col, row).* = text[col - initial_col];
+            buf.getRef(col, row).*.value = text[col - initial_col];
         }
     }
 }

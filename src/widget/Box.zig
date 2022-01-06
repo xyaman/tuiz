@@ -4,6 +4,8 @@ const Buffer = @import("../main.zig").Buffer;
 const Rect = @import("../main.zig").Rect;
 const Widget = @import("Widget.zig");
 
+const Style = @import("../style.zig").Style;
+
 const chars = @import("chars.zig");
 
 const Self = @This();
@@ -11,6 +13,7 @@ const Self = @This();
 widget: Widget = .{ .drawFn = draw, .sizeFn = size },
 size: Rect = undefined,
 title: ?[]const u8 = null,
+title_style: Style = .default,
 
 pub fn init() Self {
     return .{};
@@ -21,8 +24,9 @@ pub fn setSize(self: *Self, r: Rect) *Self {
     return self;
 }
 
-pub fn setTitle(self: *Self, title: []const u8) *Self {
+pub fn setTitle(self: *Self, title: []const u8, style: Style) *Self {
     self.title = title;
+    self.title_style = style;
     return self;
 }
 
@@ -36,18 +40,19 @@ pub fn draw(widget: *Widget, buf: *Buffer) void {
     var x: usize = self.size.col;
 
     // borders
-    buf.getRef(x, row).* = chars.ULCorner;
-    buf.getRef(x + self.size.w, row).* = chars.URCorner;
+    buf.getRef(x, row).*.value = chars.ULCorner;
+    buf.getRef(x, row).*.value = chars.ULCorner;
+    buf.getRef(x + self.size.w, row).*.value = chars.URCorner;
 
-    buf.getRef(x, self.size.h + self.size.row).* = chars.LLCorner;
-    buf.getRef(x + self.size.w, self.size.h + self.size.row).* = chars.LRCorner;
+    buf.getRef(x, self.size.h + self.size.row).*.value = chars.LLCorner;
+    buf.getRef(x + self.size.w, self.size.h + self.size.row).*.value = chars.LRCorner;
 
     row += 1;
 
     // vertical lines
     while (row < self.size.h + self.size.row) : (row += 1) {
-        buf.getRef(x, row).* = chars.VLine;
-        buf.getRef(x + self.size.w, row).* = chars.VLine;
+        buf.getRef(x, row).*.value = chars.VLine;
+        buf.getRef(x + self.size.w, row).*.value = chars.VLine;
     }
 
     // horizontal
@@ -56,8 +61,8 @@ pub fn draw(widget: *Widget, buf: *Buffer) void {
         var y: usize = self.size.row;
 
         while (col < self.size.w + self.size.col) : (col += 1) {
-            buf.getRef(col, y).* = chars.HLine;
-            buf.getRef(col, y + self.size.h).* = chars.HLine;
+            buf.getRef(col, y).*.value = chars.HLine;
+            buf.getRef(col, y + self.size.h).*.value = chars.HLine;
         }
     }
 
@@ -66,7 +71,9 @@ pub fn draw(widget: *Widget, buf: *Buffer) void {
         const start: usize = self.size.col + 1;
         var col: usize = start;
         while (col - start < title.len and col - start < self.size.w - 1) : (col += 1) {
-            buf.getRef(col, self.size.row).* = title[col - start];
+            var cell = buf.getRef(col, self.size.row);
+            cell.*.value = title[col - start];
+            cell.*.style = self.title_style;
         }
     }
 }

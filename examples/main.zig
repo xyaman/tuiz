@@ -29,7 +29,7 @@ pub fn main() !void {
     const size = try mibu.term.getSize();
     var box = Box.init()
         .setSize(.{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 })
-        .setTitle(" Hello world ");
+        .setTitle(" Hello world ", .bold);
 
     var running = true;
     while (running) {
