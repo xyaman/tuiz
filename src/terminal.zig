@@ -7,6 +7,7 @@ const RawTerm = mibu.term.RawTerm;
 
 const Widget = @import("./widget.zig").Widget;
 const Queue = @import("./mpsc.zig").Queue;
+const Cell = @import("buffer.zig").Cell;
 
 const events = @import("./events.zig");
 
@@ -75,7 +76,7 @@ pub const Terminal = struct {
         defer out.print("{s}", .{cursor.show()}) catch {};
 
         for (updates.items) |update| {
-            try out.print("{s}{u}", .{ cursor.goTo(update.x + 1, update.y + 1), update.c.* });
+            try out.print("{s}{s}{u}", .{ cursor.goTo(update.x + 1, update.y + 1), update.c.*.style.s(), update.c.*.value });
         }
 
         // after draw change current buffers
@@ -88,7 +89,7 @@ pub const Terminal = struct {
 pub const Buffer = struct {
     size: mibu.term.TermSize = undefined,
 
-    inner: []u21, // u21 to support unicode
+    inner: []Cell,
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -97,8 +98,8 @@ pub const Buffer = struct {
     pub fn init(allocator: std.mem.Allocator) Self {
         var size = mibu.term.getSize() catch unreachable;
 
-        var inner = allocator.alloc(u21, size.width * size.height) catch unreachable;
-        std.mem.set(u21, inner, 0);
+        var inner = allocator.alloc(Cell, size.width * size.height) catch unreachable;
+        std.mem.set(Cell, inner, .{});
 
         return .{
             .size = size,
@@ -112,12 +113,12 @@ pub const Buffer = struct {
     }
 
     pub fn reset(self: *Self) void {
-        std.mem.set(u21, self.inner, ' ');
+        std.mem.set(Cell, self.inner, .{});
     }
 
     /// Returns a reference of a cell based on col and row.
     /// Be careful about calling this func with out of bounds col or rows.
-    pub fn getRef(self: *Self, x: usize, y: usize) *u21 {
+    pub fn getRef(self: *Self, x: usize, y: usize) *Cell {
         const row = y * self.size.width;
         return &self.inner[row + x];
     }
@@ -134,8 +135,8 @@ pub const Buffer = struct {
             var old_inner = self.inner;
             defer self.allocator.free(old_inner);
 
-            self.inner = try self.allocator.alloc(u21, new_size.width * new_size.height);
-            std.mem.set(u21, self.inner, 0);
+            self.inner = try self.allocator.alloc(Cell, new_size.width * new_size.height);
+            self.reset();
 
             return true;
         }
@@ -145,7 +146,7 @@ pub const Buffer = struct {
     pub const BufDiff = struct {
         x: usize,
         y: usize,
-        c: *u21,
+        c: *Cell,
     };
 
     /// The caller should free (deinit) the return value
@@ -154,7 +155,7 @@ pub const Buffer = struct {
 
         var i: usize = 0;
         while (i < self.inner.len) : (i += 1) {
-            if (self.inner[i] != other.inner[i]) {
+            if (!std.meta.eql(self.inner[i], other.inner[i])) {
                 try updates.append(.{ .x = i % self.size.width, .y = i / self.size.width, .c = &other.inner[i] });
             }
         }
