@@ -42,6 +42,12 @@ pub fn main() !void {
                     .ctrlC => running = false,
                     else => {},
                 },
+                .resize => {
+                    std.debug.print("{s}resize", .{mibu.cursor.goTo(2, 2)});
+                    try app.resize();
+                    const new_size = try mibu.term.getSize();
+                    _ = box.setSize(.{ .col = 0, .row = 0, .w = new_size.width - 1, .h = new_size.height - 1 });
+                },
                 else => {},
             }
         }

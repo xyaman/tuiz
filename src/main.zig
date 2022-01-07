@@ -8,9 +8,7 @@ pub const events = @import("events.zig");
 
 pub const Terminal = @import("./terminal.zig").Terminal;
 pub const Rect = @import("./terminal.zig").Rect;
-
-// maybe?
-pub const Buffer = @import("./terminal.zig").Buffer;
+pub const Buffer = @import("./buffer.zig").Buffer;
 
 test "refAllDecls" {
     std.testing.refAllDecls(@This());

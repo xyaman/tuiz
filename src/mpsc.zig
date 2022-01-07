@@ -106,7 +106,7 @@ pub fn Queue(comptime T: type) type {
                 return null;
             };
 
-            return self.tryPop().?;
+            return self.tryPop();
         }
     };
 }

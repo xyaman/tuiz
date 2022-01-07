@@ -1,10 +1,12 @@
 const std = @import("std");
-const ArrayList = std.ArrayList;
+const os = std.os;
 
 const mibu = @import("mibu");
 const cursor = mibu.cursor;
+const clear = mibu.clear;
 const RawTerm = mibu.term.RawTerm;
 
+const Buffer = @import("buffer.zig").Buffer;
 const Widget = @import("./widget.zig").Widget;
 const Queue = @import("./mpsc.zig").Queue;
 const Cell = @import("buffer.zig").Cell;
@@ -19,6 +21,7 @@ pub const Terminal = struct {
 
     buffers: [2]Buffer, // one buffer is previous state
     current: usize = 0, // current buffer
+    needs_clean: bool = false,
 
     const Self = @This();
 
@@ -41,9 +44,34 @@ pub const Terminal = struct {
         self.buffers[1].deinit();
     }
 
+    /// Resize screen buffer, useful when terminal size changes
+    pub fn resize(self: *Self) !void {
+        // clear all screen
+        for (self.buffers) |*buffer| {
+            _ = try buffer.resize();
+        }
+        self.needs_clean = true;
+    }
+
     /// Spawns event queue thread
     pub fn startEvents(self: *Self, in: anytype) !void {
         try events.spawnEventsThread(in, &self.queue);
+
+        // Resize event (SIGWINCH)
+        const gen = struct {
+            pub threadlocal var _self: *Self = undefined;
+            fn handleSigWinch(_: c_int) callconv(.C) void {
+                _self.queue.push(.resize);
+            }
+        };
+
+        gen._self = self;
+
+        os.sigaction(os.SIG.WINCH, &os.Sigaction{
+            .handler = .{ .handler = gen.handleSigWinch },
+            .mask = os.empty_sigset,
+            .flags = 0,
+        }, null);
     }
 
     /// Blocks thread until next event
@@ -65,6 +93,12 @@ pub const Terminal = struct {
     /// Flush the buffer to the screen, it should be called
     /// every time you want to update.
     pub fn flush(self: *Self, out: anytype) !void {
+        // clear screen is only needed when buffer is resized
+        if (self.needs_clean) {
+            try out.print("{s}", .{clear.all});
+            self.needs_clean = false;
+        }
+
         const current_buffer = &self.buffers[self.current];
         const update_buffer = &self.buffers[1 - self.current];
 
@@ -82,85 +116,6 @@ pub const Terminal = struct {
         // after draw change current buffers
         self.buffers[self.current].reset();
         self.current = 1 - self.current;
-    }
-};
-
-/// Represents screen (2D)
-pub const Buffer = struct {
-    size: mibu.term.TermSize = undefined,
-
-    inner: []Cell,
-    allocator: std.mem.Allocator,
-
-    const Self = @This();
-
-    /// Inits a buffer
-    pub fn init(allocator: std.mem.Allocator) Self {
-        var size = mibu.term.getSize() catch unreachable;
-
-        var inner = allocator.alloc(Cell, size.width * size.height) catch unreachable;
-        std.mem.set(Cell, inner, .{});
-
-        return .{
-            .size = size,
-            .allocator = allocator,
-            .inner = inner,
-        };
-    }
-
-    pub fn deinit(self: *Self) void {
-        self.allocator.free(self.inner);
-    }
-
-    pub fn reset(self: *Self) void {
-        std.mem.set(Cell, self.inner, .{});
-    }
-
-    /// Returns a reference of a cell based on col and row.
-    /// Be careful about calling this func with out of bounds col or rows.
-    pub fn getRef(self: *Self, x: usize, y: usize) *Cell {
-        const row = y * self.size.width;
-        return &self.inner[row + x];
-    }
-
-    /// Resizes the buffer if is necesary (terminal size changed)
-    /// Return true if it changed, false otherwise
-    pub fn resize(self: *Self) !bool {
-        const new_size = try mibu.term.getSize();
-
-        // size changed
-        if (new_size.width != self.size.width or new_size.height != self.size.height) {
-            self.size = new_size;
-
-            var old_inner = self.inner;
-            defer self.allocator.free(old_inner);
-
-            self.inner = try self.allocator.alloc(Cell, new_size.width * new_size.height);
-            self.reset();
-
-            return true;
-        }
-        return false;
-    }
-
-    pub const BufDiff = struct {
-        x: usize,
-        y: usize,
-        c: *Cell,
-    };
-
-    /// The caller should free (deinit) the return value
-    pub fn diff(self: *Self, other: *Buffer) !ArrayList(BufDiff) {
-        var updates = ArrayList(BufDiff).init(self.allocator);
-
-        var i: usize = 0;
-        while (i < self.inner.len) : (i += 1) {
-            if (!std.meta.eql(self.inner[i], other.inner[i])) {
-                try updates.append(.{ .x = i % self.size.width, .y = i / self.size.width, .c = &other.inner[i] });
-            }
-        }
-
-        return updates;
     }
 };
 
