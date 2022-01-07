@@ -1,7 +1,7 @@
 const std = @import("std");
 const ArrayList = std.ArrayList;
 
-const Style = @import("style.zig").Style;
+const TextStyle = @import("style.zig").TextStyle;
 
 const mibu = @import("mibu");
 const color = mibu.color;
@@ -10,7 +10,7 @@ pub const Cell = struct {
     value: u21 = ' ',
     fg: []const u8 = color.fg(.default),
     bg: []const u8 = color.bg(.default),
-    style: Style = .default,
+    style: TextStyle = .default,
 };
 
 /// Represents screen (2D)

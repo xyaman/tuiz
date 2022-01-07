@@ -14,45 +14,42 @@ pub fn main() !void {
     const stdin = std.io.getStdIn();
     const stdout = std.io.getStdOut();
 
-    // probably needs to find a better way
     const timeout = 0.25 * @as(f32, std.time.ns_per_s);
 
-    // clear screen
+    // clear screen at start
     try stdout.writer().print("{s}", .{clear.all});
 
-    var app = try Terminal.init(std.testing.allocator, stdin.handle);
-    defer app.deinit();
+    var term = try Terminal.init(std.testing.allocator, stdin.handle);
+    defer term.deinit();
 
-    try app.startEvents(stdin.reader());
+    try term.startEvents(stdin.reader());
 
     // this dont support resize yet
-    const size = try mibu.term.getSize();
+    var size = try mibu.term.getSize();
     var box = Box.init()
         .setSize(.{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 })
         .setTitle(" Hello world ", .bold);
 
     var running = true;
     while (running) {
-        // _ = try app.buffer.resize();
 
         // blocks thread until an event is received, or timeout is reached
-        if (app.nextEventTimeout(timeout)) |event| {
+        if (term.nextEventTimeout(timeout)) |event| {
             switch (event) {
                 .key => |k| switch (k) {
                     .ctrlC => running = false,
                     else => {},
                 },
                 .resize => {
-                    std.debug.print("{s}resize", .{mibu.cursor.goTo(2, 2)});
-                    try app.resize();
-                    const new_size = try mibu.term.getSize();
-                    _ = box.setSize(.{ .col = 0, .row = 0, .w = new_size.width - 1, .h = new_size.height - 1 });
+                    try term.resize();
+                    size = try mibu.term.getSize();
+                    _ = box.setSize(.{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 });
                 },
                 else => {},
             }
         }
 
-        app.drawWidget(&box.widget);
-        try app.flush(stdout.writer());
+        term.drawWidget(&box.widget);
+        try term.flush(stdout.writer());
     }
 }

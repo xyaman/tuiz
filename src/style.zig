@@ -1,7 +1,7 @@
 const std = @import("std");
 const style = @import("mibu").style;
 
-pub const Style = enum {
+pub const TextStyle = enum {
     default,
     bold,
     italic,

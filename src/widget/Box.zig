@@ -4,7 +4,7 @@ const Buffer = @import("../main.zig").Buffer;
 const Rect = @import("../main.zig").Rect;
 const Widget = @import("Widget.zig");
 
-const Style = @import("../style.zig").Style;
+const TextStyle = @import("../style.zig").TextStyle;
 
 const chars = @import("chars.zig");
 
@@ -13,7 +13,7 @@ const Self = @This();
 widget: Widget = .{ .drawFn = draw, .sizeFn = size },
 size: Rect = undefined,
 title: ?[]const u8 = null,
-title_style: Style = .default,
+title_style: TextStyle = .default,
 
 pub fn init() Self {
     return .{};
@@ -24,7 +24,7 @@ pub fn setSize(self: *Self, r: Rect) *Self {
     return self;
 }
 
-pub fn setTitle(self: *Self, title: []const u8, style: Style) *Self {
+pub fn setTitle(self: *Self, title: []const u8, style: TextStyle) *Self {
     self.title = title;
     self.title_style = style;
     return self;
