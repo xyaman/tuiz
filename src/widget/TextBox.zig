@@ -3,9 +3,10 @@ const ArrayList = std.ArrayList;
 
 const Buffer = @import("../main.zig").Buffer;
 const Rect = @import("../main.zig").Rect;
-
 const Widget = @import("Widget.zig");
 const Box = @import("Box.zig");
+
+const TextStyle = @import("../style.zig").TextStyle;
 const chars = @import("chars.zig");
 
 const Self = @This();
@@ -15,6 +16,8 @@ box: Box = Box.init(),
 size: Rect = undefined,
 
 title: ?[]const u8 = undefined,
+title_style: TextStyle = .default,
+
 text: ?[]u21 = undefined,
 
 pub fn init() Self {
@@ -27,8 +30,8 @@ pub fn setSize(self: *Self, r: Rect) *Self {
     return self;
 }
 
-pub fn setTitle(self: *Self, title: []const u8) *Self {
-    _ = self.box.setTitle(title);
+pub fn setTitle(self: *Self, title: []const u8, style: TextStyle) *Self {
+    _ = self.box.setTitle(title, style);
     return self;
 }
 
