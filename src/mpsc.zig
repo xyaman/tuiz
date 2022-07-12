@@ -59,7 +59,7 @@ pub fn Queue(comptime T: type) type {
             std.Thread.Futex.wake(&self.ptr, 1);
         }
 
-        /// Tries to pops some value from queue, returns null if there are no values. 
+        /// Tries to pops some value from queue, returns null if there are no values.
         /// Should be called only from one thread. It doesn't block the thread.
         pub fn tryPop(self: *Self) ?T {
             if (self.count.load(.Acquire) < 1) {
@@ -83,26 +83,26 @@ pub fn Queue(comptime T: type) type {
         }
 
         /// Pops some value from queue, blocks until receives a value,
-        /// Should be called only from one thread. 
+        /// Should be called only from one thread.
         pub fn pop(self: *Self) T {
             if (self.tryPop()) |v| {
                 return v;
             }
 
             // wait
-            std.Thread.Futex.wait(&self.ptr, 1, null) catch {};
+            std.Thread.Futex.wait(&self.ptr, 1) catch {};
             return self.tryPop().?;
         }
 
         /// Pops some value from queue, blocks until receives a value,
-        /// or timeout is reached. Should be called only from one thread. 
+        /// or timeout is reached. Should be called only from one thread.
         pub fn popTimeout(self: *Self, timeout: u64) ?T {
             if (self.tryPop()) |v| {
                 return v;
             }
 
             // wait, if there is timeout error, return null
-            std.Thread.Futex.wait(&self.ptr, 1, timeout) catch {
+            std.Thread.Futex.timedWait(&self.ptr, 1, timeout) catch {
                 return null;
             };
 

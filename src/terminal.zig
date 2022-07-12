@@ -4,7 +4,7 @@ const os = std.os;
 const mibu = @import("mibu");
 const cursor = mibu.cursor;
 const clear = mibu.clear;
-const RawTerm = mibu.term.RawTerm;
+const term = mibu.term;
 
 const Buffer = @import("buffer.zig").Buffer;
 const Widget = @import("./widget.zig").Widget;
@@ -16,11 +16,12 @@ const events = @import("./events.zig");
 /// Main structure
 pub const Terminal = struct {
     allocator: std.mem.Allocator,
-    raw_term: RawTerm,
+    raw_term: term.RawTerm,
     queue: Queue(mibu.events.Event),
 
     buffers: [2]Buffer, // one buffer is previous state
-    current: usize = 0, // current buffer
+    current: u2 = 0, // current buffer index (0 or 1)
+
     needs_clean: bool = false,
 
     const Self = @This();
@@ -29,7 +30,7 @@ pub const Terminal = struct {
         var self = Self{
             .allocator = allocator,
             .buffers = .{ Buffer.init(allocator), Buffer.init(allocator) },
-            .raw_term = try RawTerm.enableRawMode(handle, .blocking),
+            .raw_term = try term.enableRawMode(handle, .blocking),
             .queue = Queue(mibu.events.Event).init(allocator),
         };
 
@@ -67,7 +68,7 @@ pub const Terminal = struct {
 
         gen._self = self;
 
-        os.sigaction(os.SIG.WINCH, &os.Sigaction{
+        try os.sigaction(os.SIG.WINCH, &os.Sigaction{
             .handler = .{ .handler = gen.handleSigWinch },
             .mask = os.empty_sigset,
             .flags = 0,
@@ -95,7 +96,7 @@ pub const Terminal = struct {
     pub fn flush(self: *Self, out: anytype) !void {
         // clear screen is only needed when buffer is resized
         if (self.needs_clean) {
-            try out.print("{s}", .{clear.all});
+            try out.print("{s}", .{clear.print.all});
             self.needs_clean = false;
         }
 
@@ -106,11 +107,11 @@ pub const Terminal = struct {
         defer updates.deinit();
 
         // hide cursor before rendering
-        try out.print("{s}", .{cursor.hide()});
-        defer out.print("{s}", .{cursor.show()}) catch {};
+        try out.print("{s}", .{cursor.print.hide()});
+        defer out.print("{s}", .{cursor.print.show()}) catch {};
 
         for (updates.items) |update| {
-            try out.print("{s}{s}{u}", .{ cursor.goTo(update.x + 1, update.y + 1), update.c.*.style.s(), update.c.*.value });
+            try out.print("{s}{s}{u}", .{ cursor.print.goTo(update.x + 1, update.y + 1), update.c.*.style.s(), update.c.*.value });
         }
 
         // after draw change current buffers

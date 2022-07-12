@@ -8,9 +8,9 @@ pub const TextStyle = enum {
 
     pub fn s(self: @This()) []const u8 {
         return switch (self) {
-            .default => style.reset,
-            .bold => style.bold,
-            .italic => style.italic,
+            .default => style.print.reset,
+            .bold => style.print.bold,
+            .italic => style.print.italic,
         };
     }
 };

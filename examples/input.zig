@@ -18,7 +18,7 @@ pub fn main() !void {
     const timeout = 0.25 * @as(f32, std.time.ns_per_s);
 
     // clear screen
-    try stdout.writer().print("{s}", .{clear.all});
+    try clear.all(stdout.writer());
 
     var app = try Terminal.init(std.testing.allocator, stdin.handle);
     defer app.deinit();
@@ -37,7 +37,10 @@ pub fn main() !void {
         if (app.nextEventTimeout(timeout)) |event| {
             switch (event) {
                 .key => |k| switch (k) {
-                    .ctrlC => running = false,
+                    .ctrl => |c| switch (c) {
+                        'c' => running = false,
+                        else => {},
+                    },
                     .char => |c| try text.append(c),
                     .delete => _ = text.popOrNull(),
                     else => {},

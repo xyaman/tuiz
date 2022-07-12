@@ -23,9 +23,9 @@ pub const PollTimeout = struct {
     }
 };
 
-/// Blocks until a event is received or timeout is reached
-/// It needs to be used with `.nonblocking` raw terminal mode
-/// otherwise it will block until an event is received
+/// Blocks until a event is received or timeout is reached. It needs to be used
+/// with `.nonblocking` raw terminal mode otherwise it will block until an event
+/// is received.
 pub fn poll(in: anytype, timeout: i128) !?events.Event {
     const ptout = PollTimeout.init(timeout);
 

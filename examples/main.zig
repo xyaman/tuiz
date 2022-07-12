@@ -17,7 +17,7 @@ pub fn main() !void {
     const timeout = 0.25 * @as(f32, std.time.ns_per_s);
 
     // clear screen at start
-    try stdout.writer().print("{s}", .{clear.all});
+    try stdout.writer().print("{s}", .{clear.print.all});
 
     var term = try Terminal.init(std.testing.allocator, stdin.handle);
     defer term.deinit();

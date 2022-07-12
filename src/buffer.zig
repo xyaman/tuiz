@@ -8,8 +8,8 @@ const color = mibu.color;
 
 pub const Cell = struct {
     value: u21 = ' ',
-    fg: []const u8 = color.fg(.default),
-    bg: []const u8 = color.bg(.default),
+    fg: []const u8 = color.print.fg(.default),
+    bg: []const u8 = color.print.bg(.default),
     style: TextStyle = .default,
 };
 
@@ -24,7 +24,8 @@ pub const Buffer = struct {
 
     /// Inits a buffer
     pub fn init(allocator: std.mem.Allocator) Self {
-        var size = mibu.term.getSize() catch unreachable;
+        // TODO: check getSize parameter
+        var size = mibu.term.getSize(std.os.STDOUT_FILENO) catch unreachable;
 
         var inner = allocator.alloc(Cell, size.width * size.height) catch unreachable;
         std.mem.set(Cell, inner, .{});
@@ -40,6 +41,7 @@ pub const Buffer = struct {
         self.allocator.free(self.inner);
     }
 
+    // Resets the buffer inner content with empty cells
     pub fn reset(self: *Self) void {
         std.mem.set(Cell, self.inner, .{});
     }
@@ -54,7 +56,8 @@ pub const Buffer = struct {
     /// Resizes the buffer if is necesary (terminal size changed)
     /// Return true if it changed, false otherwise
     pub fn resize(self: *Self) !bool {
-        const new_size = try mibu.term.getSize();
+        // TODO: check parameter of getSize
+        const new_size = try mibu.term.getSize(0);
 
         // size changed
         if (new_size.width != self.size.width or new_size.height != self.size.height) {
@@ -68,6 +71,7 @@ pub const Buffer = struct {
 
             return true;
         }
+
         return false;
     }
 
