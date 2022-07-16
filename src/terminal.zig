@@ -47,10 +47,11 @@ pub const Terminal = struct {
 
     /// Resize screen buffer, useful when terminal size changes
     pub fn resize(self: *Self) !void {
-        // clear all screen
         for (self.buffers) |*buffer| {
             _ = try buffer.resize();
         }
+        // This will force to clean screen in next render, otherwise we may
+        // experience visual bugs
         self.needs_clean = true;
     }
 
@@ -86,9 +87,11 @@ pub const Terminal = struct {
     }
 
     /// Draws a widget on the screen.
+    /// Technically, writes a widget in the buffer. Flush will draw the changes
+    /// in the buffer.
     pub fn drawWidget(self: *Self, widget: *Widget) void {
-        var update_buffer = &self.buffers[1 - self.current];
-        widget.draw(update_buffer);
+        var not_current_buffer = &self.buffers[1 - self.current];
+        widget.draw(not_current_buffer);
     }
 
     /// Flush the buffer to the screen, it should be called

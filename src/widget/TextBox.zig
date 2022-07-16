@@ -8,17 +8,17 @@ const Box = @import("Box.zig");
 
 const TextStyle = @import("../style.zig").TextStyle;
 const chars = @import("chars.zig");
-
 const Self = @This();
 
 widget: Widget = .{ .drawFn = draw, .sizeFn = size },
 box: Box = Box.init(),
 size: Rect = undefined,
 
-title: ?[]const u8 = undefined,
+title: ?[]const u8 = null,
 title_style: TextStyle = .default,
 
-text: ?[]u21 = undefined,
+text: ?[]u21 = null,
+text_overflow: bool = false,
 
 pub fn init() Self {
     return .{};
@@ -40,7 +40,13 @@ pub fn setText(self: *Self, text: []u21) *Self {
     return self;
 }
 
+pub fn noTextOverflow(self: *Self, overflow: bool) *Self {
+    self.text_overflow = overflow;
+    return self;
+}
+
 pub fn draw(widget: *Widget, buf: *Buffer) void {
+    // draw box
     var self = @fieldParentPtr(Self, "widget", widget);
     var box = &self.box.widget;
     box.draw(buf);
@@ -51,12 +57,21 @@ pub fn draw(widget: *Widget, buf: *Buffer) void {
         var col = initial_col;
         var row = self.size.row + 1;
 
-        while (col < initial_col + text.len) : (col += 1) {
+        // overflow text
+        var max_length: usize = undefined;
+        if (!self.text_overflow and self.size.w - 1 < text.len) {
+            max_length = self.size.w - 1;
+        } else {
+            max_length = text.len;
+        }
+
+        while (col < initial_col + max_length) : (col += 1) {
             buf.getRef(col, row).*.value = text[col - initial_col];
         }
     }
 }
 
+// Returns widget size
 pub fn size(widget: *Widget) Rect {
     var self = @fieldParentPtr(Self, "widget", widget);
     return self.size;

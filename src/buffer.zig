@@ -15,7 +15,7 @@ pub const Cell = struct {
 
 /// Represents screen (2D)
 pub const Buffer = struct {
-    size: mibu.term.TermSize = undefined,
+    size: mibu.term.TermSize,
 
     inner: []Cell,
     allocator: std.mem.Allocator,
@@ -81,7 +81,7 @@ pub const Buffer = struct {
         c: *Cell,
     };
 
-    /// The caller should free (deinit) the return value
+    /// *Note*: The caller should free (deinit) the return value
     pub fn diff(self: *Self, other: *Buffer) !ArrayList(BufDiff) {
         var updates = ArrayList(BufDiff).init(self.allocator);
 
