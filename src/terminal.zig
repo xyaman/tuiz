@@ -89,7 +89,7 @@ pub const Terminal = struct {
     /// Draws a widget on the screen.
     /// Technically, writes a widget in the buffer. Flush will draw the changes
     /// in the buffer.
-    pub fn drawWidget(self: *Self, widget: *Widget) void {
+    pub fn drawWidget(self: *Self, widget: Widget) void {
         var not_current_buffer = &self.buffers[1 - self.current];
         widget.draw(not_current_buffer);
     }
@@ -121,14 +121,6 @@ pub const Terminal = struct {
         self.buffers[self.current].reset();
         self.current = 1 - self.current;
     }
-};
-
-// TODO: change location
-pub const Rect = struct {
-    row: usize,
-    col: usize,
-    w: usize,
-    h: usize,
 };
 
 test "refAll" {

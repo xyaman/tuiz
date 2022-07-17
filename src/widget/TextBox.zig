@@ -2,15 +2,14 @@ const std = @import("std");
 const ArrayList = std.ArrayList;
 
 const Buffer = @import("../main.zig").Buffer;
-const Rect = @import("../main.zig").Rect;
 const Widget = @import("Widget.zig");
+const Rect = Widget.Rect;
 const Box = @import("Box.zig");
 
 const TextStyle = @import("../style.zig").TextStyle;
 const chars = @import("chars.zig");
 const Self = @This();
 
-widget: Widget = .{ .drawFn = draw, .sizeFn = size },
 box: Box = Box.init(),
 size: Rect = undefined,
 
@@ -45,10 +44,9 @@ pub fn noTextOverflow(self: *Self, overflow: bool) *Self {
     return self;
 }
 
-pub fn draw(widget: *Widget, buf: *Buffer) void {
+pub fn draw(self: *Self, buf: *Buffer) void {
     // draw box
-    var self = @fieldParentPtr(Self, "widget", widget);
-    var box = &self.box.widget;
+    var box = self.box.widget();
     box.draw(buf);
 
     // draw text
@@ -72,7 +70,10 @@ pub fn draw(widget: *Widget, buf: *Buffer) void {
 }
 
 // Returns widget size
-pub fn size(widget: *Widget) Rect {
-    var self = @fieldParentPtr(Self, "widget", widget);
+pub fn size(self: *Self) Rect {
     return self.size;
+}
+
+pub fn widget(self: *Self) Widget {
+    return Widget.make(self);
 }

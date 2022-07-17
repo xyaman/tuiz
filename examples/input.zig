@@ -50,7 +50,7 @@ pub fn main() !void {
         }
 
         _ = input.setText(text.items);
-        app.drawWidget(&input.widget);
+        app.drawWidget(input.widget());
         try app.flush(stdout.writer());
     }
 }

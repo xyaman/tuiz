@@ -1,8 +1,8 @@
 const std = @import("std");
 
 const Buffer = @import("../main.zig").Buffer;
-const Rect = @import("../main.zig").Rect;
 const Widget = @import("Widget.zig");
+const Rect = Widget.Rect;
 
 const TextStyle = @import("../style.zig").TextStyle;
 
@@ -10,7 +10,6 @@ const chars = @import("chars.zig");
 
 const Self = @This();
 
-widget: Widget = .{ .drawFn = draw, .sizeFn = size },
 size: Rect = undefined,
 title: ?[]const u8 = null,
 title_style: TextStyle = .default,
@@ -30,9 +29,7 @@ pub fn setTitle(self: *Self, title: []const u8, style: TextStyle) *Self {
     return self;
 }
 
-pub fn draw(widget: *Widget, buf: *Buffer) void {
-    var self = @fieldParentPtr(Self, "widget", widget);
-
+pub fn draw(self: *Self, buf: *Buffer) void {
     std.debug.assert(self.size.h + self.size.row < buf.size.height);
     std.debug.assert(self.size.w + self.size.col < buf.size.width);
 
@@ -78,7 +75,10 @@ pub fn draw(widget: *Widget, buf: *Buffer) void {
     }
 }
 
-pub fn size(widget: *Widget) Rect {
-    var self = @fieldParentPtr(Self, "widget", widget);
+pub fn size(self: *Self) Rect {
     return self.size;
+}
+
+pub fn widget(self: *Self) Widget {
+    return Widget.make(self);
 }

@@ -25,7 +25,7 @@ pub fn main() !void {
     try term.startEvents(stdin.reader());
 
     // this dont support resize yet
-    var size = try mibu.term.getSize();
+    var size = try mibu.term.getSize(0);
     var box = Box.init()
         .setSize(.{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 })
         .setTitle(" Hello world ", .bold);
@@ -37,19 +37,22 @@ pub fn main() !void {
         if (term.nextEventTimeout(timeout)) |event| {
             switch (event) {
                 .key => |k| switch (k) {
-                    .ctrlC => running = false,
+                    .ctrl => |c| switch (c) {
+                        'c' => running = false,
+                        else => {},
+                    },
                     else => {},
                 },
                 .resize => {
                     try term.resize();
-                    size = try mibu.term.getSize();
+                    size = try mibu.term.getSize(0);
                     _ = box.setSize(.{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 });
                 },
                 else => {},
             }
         }
 
-        term.drawWidget(&box.widget);
+        term.drawWidget(box.widget());
         try term.flush(stdout.writer());
     }
 }

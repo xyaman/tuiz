@@ -7,7 +7,6 @@ const Queue = @import("./mpsc.zig").Queue;
 pub const events = @import("events.zig");
 
 pub const Terminal = @import("./terminal.zig").Terminal;
-pub const Rect = @import("./terminal.zig").Rect;
 pub const Buffer = @import("./buffer.zig").Buffer;
 
 test "refAllDecls" {
