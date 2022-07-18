@@ -4,13 +4,13 @@ const Buffer = @import("../main.zig").Buffer;
 
 pub const Rect = struct {
     // origin x
-    row: usize,
+    row: usize = 0,
     // origin y
-    col: usize,
+    col: usize = 0,
     // width
-    w: usize,
+    w: usize = 0,
     // height
-    h: usize,
+    h: usize = 0,
 };
 
 const Widget = @This();

@@ -55,13 +55,13 @@ pub fn draw(self: *Self, buf: *Buffer) void {
             while (curr_col < initial_col + self.size.w - 1) : (curr_col += 1) {
                 var index = curr_col - initial_col + row;
                 if (index >= text.len) return;
-                buf.getRef(curr_col, curr_row).*.value = text[index];
+                buf.unsafeGetRef(curr_col, curr_row).*.value = text[index];
             }
         }
     }
 }
 
-// Returns widget size
+// Returns widget rect
 pub fn size(self: *Self) Rect {
     return self.size;
 }

@@ -10,7 +10,7 @@ const chars = @import("chars.zig");
 
 const Self = @This();
 
-size: Rect = undefined,
+size: Rect = .{},
 title: ?[]const u8 = null,
 title_style: TextStyle = .default,
 
@@ -30,6 +30,7 @@ pub fn setTitle(self: *Self, title: []const u8, style: TextStyle) *Self {
 }
 
 pub fn draw(self: *Self, buf: *Buffer) void {
+    // TODO: change assert to if
     std.debug.assert(self.size.h + self.size.row < buf.size.height);
     std.debug.assert(self.size.w + self.size.col < buf.size.width);
 
@@ -37,19 +38,19 @@ pub fn draw(self: *Self, buf: *Buffer) void {
     var x: usize = self.size.col;
 
     // borders
-    buf.getRef(x, row).*.value = chars.ULCorner;
-    buf.getRef(x, row).*.value = chars.ULCorner;
-    buf.getRef(x + self.size.w, row).*.value = chars.URCorner;
+    buf.unsafeGetRef(x, row).*.value = chars.ULCorner;
+    buf.unsafeGetRef(x, row).*.value = chars.ULCorner;
+    buf.unsafeGetRef(x + self.size.w, row).*.value = chars.URCorner;
 
-    buf.getRef(x, self.size.h + self.size.row).*.value = chars.LLCorner;
-    buf.getRef(x + self.size.w, self.size.h + self.size.row).*.value = chars.LRCorner;
+    buf.unsafeGetRef(x, self.size.h + self.size.row).*.value = chars.LLCorner;
+    buf.unsafeGetRef(x + self.size.w, self.size.h + self.size.row).*.value = chars.LRCorner;
 
     row += 1;
 
     // vertical lines
     while (row < self.size.h + self.size.row) : (row += 1) {
-        buf.getRef(x, row).*.value = chars.VLine;
-        buf.getRef(x + self.size.w, row).*.value = chars.VLine;
+        buf.unsafeGetRef(x, row).*.value = chars.VLine;
+        buf.unsafeGetRef(x + self.size.w, row).*.value = chars.VLine;
     }
 
     // horizontal
@@ -58,8 +59,8 @@ pub fn draw(self: *Self, buf: *Buffer) void {
         var y: usize = self.size.row;
 
         while (col < self.size.w + self.size.col) : (col += 1) {
-            buf.getRef(col, y).*.value = chars.HLine;
-            buf.getRef(col, y + self.size.h).*.value = chars.HLine;
+            buf.unsafeGetRef(col, y).*.value = chars.HLine;
+            buf.unsafeGetRef(col, y + self.size.h).*.value = chars.HLine;
         }
     }
 
@@ -68,7 +69,7 @@ pub fn draw(self: *Self, buf: *Buffer) void {
         const start: usize = self.size.col + 1;
         var col: usize = start;
         while (col - start < title.len and col - start < self.size.w - 1) : (col += 1) {
-            var cell = buf.getRef(col, self.size.row);
+            var cell = buf.unsafeGetRef(col, self.size.row);
             cell.*.value = title[col - start];
             cell.*.style = self.title_style;
         }

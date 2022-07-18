@@ -48,9 +48,19 @@ pub const Buffer = struct {
 
     /// Returns a reference of a cell based on col and row.
     /// Be careful about calling this func with out of bounds col or rows.
-    pub fn getRef(self: *Self, x: usize, y: usize) *Cell {
+    pub fn unsafeGetRef(self: *Self, x: usize, y: usize) *Cell {
         const row = y * self.size.width;
         return &self.inner[row + x];
+    }
+
+    /// Returns a reference of a cell based on col and row.
+    pub fn getRef(self: *Self, x: usize, y: usize) ?*Cell {
+        const index = y * self.size.width + x;
+        if (index >= self.inner.len) {
+            return null;
+        } else {
+            return &self.inner[index];
+        }
     }
 
     /// Resizes the buffer if is necesary (terminal size changed)
