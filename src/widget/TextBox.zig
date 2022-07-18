@@ -13,11 +13,7 @@ const Self = @This();
 box: Box = Box.init(),
 size: Rect = undefined,
 
-title: ?[]const u8 = null,
-title_style: TextStyle = .default,
-
 text: ?[]u21 = null,
-text_overflow: bool = false,
 
 pub fn init() Self {
     return .{};
@@ -39,11 +35,6 @@ pub fn setText(self: *Self, text: []u21) *Self {
     return self;
 }
 
-pub fn noTextOverflow(self: *Self, overflow: bool) *Self {
-    self.text_overflow = overflow;
-    return self;
-}
-
 pub fn draw(self: *Self, buf: *Buffer) void {
     // draw box
     var box = self.box.widget();
@@ -51,20 +42,21 @@ pub fn draw(self: *Self, buf: *Buffer) void {
 
     // draw text
     if (self.text) |text| {
+        if (text.len == 0) return;
         const initial_col = self.size.col + 1;
-        var col = initial_col;
-        var row = self.size.row + 1;
+        const initial_row = self.size.row + 1;
 
-        // overflow text
-        var max_length: usize = undefined;
-        if (!self.text_overflow and self.size.w - 1 < text.len) {
-            max_length = self.size.w - 1;
-        } else {
-            max_length = text.len;
-        }
+        var curr_row = initial_row;
+        while (curr_row < initial_row + self.size.h - 1) : (curr_row += 1) {
+            var curr_col = initial_col;
+            const row = (curr_row - initial_row) * (self.size.w - 2);
 
-        while (col < initial_col + max_length) : (col += 1) {
-            buf.getRef(col, row).*.value = text[col - initial_col];
+            // TODO: change return. check index in while condition
+            while (curr_col < initial_col + self.size.w - 1) : (curr_col += 1) {
+                var index = curr_col - initial_col + row;
+                if (index >= text.len) return;
+                buf.getRef(curr_col, curr_row).*.value = text[index];
+            }
         }
     }
 }

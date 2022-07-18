@@ -26,7 +26,7 @@ pub fn main() !void {
     try app.startEvents(stdin.reader());
 
     var input = TextBox.init()
-        .setSize(.{ .col = 10, .row = 3, .w = 20, .h = 2 })
+        .setSize(.{ .col = 10, .row = 3, .w = 20, .h = 4 })
         .setTitle(" Input ", .default);
 
     var running = true;
