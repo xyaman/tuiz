@@ -5,6 +5,7 @@ const mibu = @import("mibu");
 
 const Terminal = teru.Terminal;
 const TextBox = teru.widget.TextBox;
+const Box = teru.widget.Box;
 const events = teru.events;
 
 const RawTerm = mibu.term.RawTerm;
@@ -25,9 +26,12 @@ pub fn main() !void {
 
     try app.startEvents(stdin.reader());
 
-    var input = TextBox.init()
-        .setSize(.{ .col = 10, .row = 3, .w = 20, .h = 4 })
-        .setTitle(" Input ", .default);
+    var input = TextBox.init(.{
+        .box = Box.init(.{
+            .size = .{ .col = 10, .row = 3, .w = 20, .h = 4 },
+            .title = " Input ",
+        }),
+    });
 
     var running = true;
     var text = std.ArrayList(u21).init(std.testing.allocator);
@@ -49,7 +53,7 @@ pub fn main() !void {
             }
         }
 
-        _ = input.setText(text.items);
+        input.text = text.items;
         app.drawWidget(input.widget());
         try app.flush(stdout.writer());
     }

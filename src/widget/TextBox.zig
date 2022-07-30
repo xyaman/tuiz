@@ -10,29 +10,19 @@ const TextStyle = @import("../style.zig").TextStyle;
 const chars = @import("chars.zig");
 const Self = @This();
 
-box: Box = Box.init(.{}),
-size: Rect = undefined,
+const Config = struct {
+    box: Box = Box.init(.{}),
+    text: ?[]u21 = null,
+};
 
-text: ?[]u21 = null,
+box: Box,
+text: ?[]u21,
 
-pub fn init() Self {
-    return .{};
-}
-
-pub fn setSize(self: *Self, r: Rect) *Self {
-    self.size = r;
-    _ = self.box.setSize(r);
-    return self;
-}
-
-pub fn setTitle(self: *Self, title: []const u8, style: TextStyle) *Self {
-    _ = self.box.setTitle(title, style);
-    return self;
-}
-
-pub fn setText(self: *Self, text: []u21) *Self {
-    self.text = text;
-    return self;
+pub fn init(config: Config) Self {
+    return .{
+        .box = config.box,
+        .text = config.text,
+    };
 }
 
 pub fn draw(self: *Self, buf: *Buffer) void {
@@ -43,16 +33,16 @@ pub fn draw(self: *Self, buf: *Buffer) void {
     // draw text
     if (self.text) |text| {
         if (text.len == 0) return;
-        const initial_col = self.size.col + 1;
-        const initial_row = self.size.row + 1;
+        const initial_col = self.box.size.col + 1;
+        const initial_row = self.box.size.row + 1;
 
         var curr_row = initial_row;
-        while (curr_row < initial_row + self.size.h - 1) : (curr_row += 1) {
+        while (curr_row < initial_row + self.box.size.h - 1) : (curr_row += 1) {
             var curr_col = initial_col;
-            const row = (curr_row - initial_row) * (self.size.w - 2);
+            const row = (curr_row - initial_row) * (self.box.size.w - 2);
 
             // TODO: change return. check index in while condition
-            while (curr_col < initial_col + self.size.w - 1) : (curr_col += 1) {
+            while (curr_col < initial_col + self.box.size.w - 1) : (curr_col += 1) {
                 var index = curr_col - initial_col + row;
                 if (index >= text.len) return;
                 buf.unsafeGetRef(curr_col, curr_row).*.value = text[index];
@@ -63,7 +53,7 @@ pub fn draw(self: *Self, buf: *Buffer) void {
 
 // Returns widget rect
 pub fn size(self: *Self) Rect {
-    return self.size;
+    return self.box.size;
 }
 
 pub fn widget(self: *Self) Widget {
