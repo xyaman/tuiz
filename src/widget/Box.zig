@@ -10,12 +10,25 @@ const chars = @import("chars.zig");
 
 const Self = @This();
 
-size: Rect = .{},
-title: ?[]const u8 = null,
-title_style: TextStyle = .default,
+const Config = struct {
+    size: Rect = .{},
+    border: bool = true,
+    title: ?[]const u8 = null,
+    title_style: TextStyle = .default,
+};
 
-pub fn init() Self {
-    return .{};
+size: Rect,
+border: bool,
+title: ?[]const u8,
+title_style: TextStyle,
+
+pub fn init(config: Config) Self {
+    return .{
+        .size = config.size,
+        .border = config.border,
+        .title = config.title,
+        .title_style = config.title_style,
+    };
 }
 
 pub fn setSize(self: *Self, r: Rect) *Self {
@@ -38,29 +51,31 @@ pub fn draw(self: *Self, buf: *Buffer) void {
     var x: usize = self.size.col;
 
     // borders
-    buf.unsafeGetRef(x, row).*.value = chars.ULCorner;
-    buf.unsafeGetRef(x, row).*.value = chars.ULCorner;
-    buf.unsafeGetRef(x + self.size.w, row).*.value = chars.URCorner;
+    if (self.border) {
+        buf.unsafeGetRef(x, row).*.value = chars.ULCorner;
+        buf.unsafeGetRef(x, row).*.value = chars.ULCorner;
+        buf.unsafeGetRef(x + self.size.w, row).*.value = chars.URCorner;
 
-    buf.unsafeGetRef(x, self.size.h + self.size.row).*.value = chars.LLCorner;
-    buf.unsafeGetRef(x + self.size.w, self.size.h + self.size.row).*.value = chars.LRCorner;
+        buf.unsafeGetRef(x, self.size.h + self.size.row).*.value = chars.LLCorner;
+        buf.unsafeGetRef(x + self.size.w, self.size.h + self.size.row).*.value = chars.LRCorner;
 
-    row += 1;
+        row += 1;
 
-    // vertical lines
-    while (row < self.size.h + self.size.row) : (row += 1) {
-        buf.unsafeGetRef(x, row).*.value = chars.VLine;
-        buf.unsafeGetRef(x + self.size.w, row).*.value = chars.VLine;
-    }
+        // vertical lines
+        while (row < self.size.h + self.size.row) : (row += 1) {
+            buf.unsafeGetRef(x, row).*.value = chars.VLine;
+            buf.unsafeGetRef(x + self.size.w, row).*.value = chars.VLine;
+        }
 
-    // horizontal
-    {
-        var col: usize = self.size.col + 1;
-        var y: usize = self.size.row;
+        // horizontal
+        {
+            var col: usize = self.size.col + 1;
+            var y: usize = self.size.row;
 
-        while (col < self.size.w + self.size.col) : (col += 1) {
-            buf.unsafeGetRef(col, y).*.value = chars.HLine;
-            buf.unsafeGetRef(col, y + self.size.h).*.value = chars.HLine;
+            while (col < self.size.w + self.size.col) : (col += 1) {
+                buf.unsafeGetRef(col, y).*.value = chars.HLine;
+                buf.unsafeGetRef(col, y + self.size.h).*.value = chars.HLine;
+            }
         }
     }
 

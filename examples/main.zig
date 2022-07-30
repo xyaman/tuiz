@@ -26,9 +26,11 @@ pub fn main() !void {
 
     // this dont support resize yet
     var size = try mibu.term.getSize(0);
-    var box = Box.init()
-        .setSize(.{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 })
-        .setTitle(" Hello world ", .bold);
+    var box = Box.init(.{
+        .size = .{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 },
+        .title = " Hello World ",
+        .title_style = .bold,
+    });
 
     var running = true;
     while (running) {

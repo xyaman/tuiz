@@ -10,7 +10,7 @@ const TextStyle = @import("../style.zig").TextStyle;
 const chars = @import("chars.zig");
 const Self = @This();
 
-box: Box = Box.init(),
+box: Box = Box.init(.{}),
 size: Rect = undefined,
 
 text: ?[]u21 = null,
