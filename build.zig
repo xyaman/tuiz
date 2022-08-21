@@ -19,19 +19,16 @@ pub fn build(b: *std.build.Builder) void {
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&main_tests.step);
 
-    // main
-    const main_ex = b.addExecutable("example", "examples/main.zig");
-    main_ex.setTarget(target);
-    deps.pkgs.addAllTo(main_ex);
+    // examples
+    const examples = [_][]const u8{ "box", "input" };
 
-    const main_ex_step = b.step("example", "Run main_ex example");
-    main_ex_step.dependOn(&main_ex.run().step);
+    for (examples) |example| {
+        const exec = b.addExecutable(example, std.fmt.allocPrint(b.allocator, "examples/{s}.zig", .{example}) catch unreachable);
+        exec.setTarget(target);
+        deps.pkgs.addAllTo(exec);
 
-    // input
-    const input_ex = b.addExecutable("example", "examples/input.zig");
-    input_ex.setTarget(target);
-    deps.pkgs.addAllTo(input_ex);
-
-    const input_ex_step = b.step("input", "Run input_ex example");
-    input_ex_step.dependOn(&input_ex.run().step);
+        const exec_run = exec.run();
+        const exec_step = b.step(example, std.fmt.allocPrint(b.allocator, "Run example: {s}", .{example}) catch unreachable);
+        exec_step.dependOn(&exec_run.step);
+    }
 }

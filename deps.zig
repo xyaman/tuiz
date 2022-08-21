@@ -5,8 +5,8 @@ pub const pkgs = struct {
         .source = .{ .path = "lib/mibu/src/main.zig" },
     };
 
-    pub const teru = std.build.Pkg{
-        .name = "teru",
+    pub const tuiz = std.build.Pkg{
+        .name = "tuiz",
         .source = .{ .path = "src/main.zig" },
         .dependencies = &[_]std.build.Pkg{
             std.build.Pkg{
@@ -18,7 +18,7 @@ pub const pkgs = struct {
 
     pub const all = [_]std.build.Pkg{
         pkgs.mibu,
-        pkgs.teru,
+        pkgs.tuiz,
     };
 
     pub fn addAllTo(artifact: *std.build.LibExeObjStep) void {

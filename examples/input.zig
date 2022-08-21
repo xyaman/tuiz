@@ -1,12 +1,12 @@
 const std = @import("std");
 
-const teru = @import("teru");
+const tuiz = @import("tuiz");
 const mibu = @import("mibu");
 
-const Terminal = teru.Terminal;
-const TextBox = teru.widget.TextBox;
-const Box = teru.widget.Box;
-const events = teru.events;
+const Terminal = tuiz.Terminal;
+const TextBox = tuiz.widget.TextBox;
+const Box = tuiz.widget.Box;
+const events = tuiz.events;
 
 const RawTerm = mibu.term.RawTerm;
 const clear = mibu.clear;
@@ -15,13 +15,18 @@ pub fn main() !void {
     const stdin = std.io.getStdIn();
     const stdout = std.io.getStdOut();
 
-    // probably needs to find a better way
     const timeout = 0.25 * @as(f32, std.time.ns_per_s);
 
     // clear screen
     try clear.all(stdout.writer());
 
-    var app = try Terminal.init(std.testing.allocator, stdin.handle);
+    var allocator_state = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = allocator_state.allocator();
+    defer {
+        _ = allocator_state.deinit();
+    }
+
+    var app = try Terminal.init(allocator, stdin.handle);
     defer app.deinit();
 
     try app.startEvents(stdin.reader());
@@ -34,7 +39,9 @@ pub fn main() !void {
     });
 
     var running = true;
-    var text = std.ArrayList(u21).init(std.testing.allocator);
+    var text = std.ArrayList(u21).init(allocator);
+    defer text.deinit();
+
     while (running) {
 
         // blocks thread until an event is received, or timeout is reached
@@ -57,4 +64,5 @@ pub fn main() !void {
         app.drawWidget(input.widget());
         try app.flush(stdout.writer());
     }
+    input.text = null;
 }
