@@ -16,10 +16,26 @@ pub const Orientation = enum {
 
 const Self = @This();
 
-box: Box = Box.init(.{}),
+const Config = struct {
+    box: Box = Box.init(.{}),
+    children: []Children,
+    sep: u21 = ' ',
+    orientation: Orientation = .horizontal,
+};
+
+box: Box,
 children: []Children,
-sep: u21 = ' ',
-orientation: Orientation = .horizontal,
+sep: u21,
+orientation: Orientation,
+
+pub fn init(config: Config) Self {
+    return .{
+        .box = config.box,
+        .children = config.children,
+        .sep = config.sep,
+        .orientation = config.orientation,
+    };
+}
 
 pub fn draw(self: *Self, buf: *Buffer) void {
     var box = self.box.widget();

@@ -13,14 +13,21 @@ const Self = @This();
 const Config = struct {
     rect: Rect = .{},
     border: bool = true,
-    layout: bool = false,
+    layout: Layout = .default,
     title: ?[]const u8 = null,
     title_style: TextStyle = .default,
 };
 
+pub const Layout = enum {
+    default,
+    // Use full width and height.
+    // Its recommended to only use max in ONE widget. Usually the main one
+    max,
+};
+
 rect: Rect,
 border: bool,
-layout: bool = true,
+layout: Layout,
 title: ?[]const u8,
 title_style: TextStyle,
 
@@ -35,7 +42,7 @@ pub fn init(config: Config) Self {
 }
 
 pub fn draw(self: *Self, buf: *Buffer) void {
-    if (self.layout and buf.size_changed) {
+    if (self.layout == .max and buf.size_changed) {
         self.rect = .{ .row = 0, .col = 0, .w = buf.size.width - 1, .h = buf.size.height - 1 };
     }
 

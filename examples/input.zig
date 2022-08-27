@@ -42,18 +42,18 @@ pub fn main() !void {
     var empty = Box.init(.{ .title = " inside " });
 
     const size = try mibu.term.getSize(0);
-    var stack = Stack{
+    var stack = Stack.init(.{
         .box = Box.init(.{
             .title = " Stack ",
             .rect = .{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 },
-            .layout = true,
+            .layout = .max,
         }),
         .orientation = .vertical,
         .children = &[_]Stack.Children{
             .{ .widget = input.widget(), .factor = 2 },
             .{ .widget = empty.widget(), .factor = 1 },
         },
-    };
+    });
 
     var running = true;
     var text = std.ArrayList(u21).init(allocator);
