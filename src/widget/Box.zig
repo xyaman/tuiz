@@ -11,88 +11,84 @@ const chars = @import("chars.zig");
 const Self = @This();
 
 const Config = struct {
-    size: Rect = .{},
+    rect: Rect = .{},
     border: bool = true,
+    layout: bool = false,
     title: ?[]const u8 = null,
     title_style: TextStyle = .default,
 };
 
-size: Rect,
+rect: Rect,
 border: bool,
+layout: bool = true,
 title: ?[]const u8,
 title_style: TextStyle,
 
 pub fn init(config: Config) Self {
     return .{
-        .size = config.size,
+        .rect = config.rect,
+        .layout = config.layout,
         .border = config.border,
         .title = config.title,
         .title_style = config.title_style,
     };
 }
 
-pub fn setSize(self: *Self, r: Rect) *Self {
-    self.size = r;
-    return self;
-}
-
-pub fn setTitle(self: *Self, title: []const u8, style: TextStyle) *Self {
-    self.title = title;
-    self.title_style = style;
-    return self;
-}
-
 pub fn draw(self: *Self, buf: *Buffer) void {
-    // TODO: change assert to if
-    std.debug.assert(self.size.h + self.size.row < buf.size.height);
-    std.debug.assert(self.size.w + self.size.col < buf.size.width);
+    if (self.layout and buf.size_changed) {
+        self.rect = .{ .row = 0, .col = 0, .w = buf.size.width - 1, .h = buf.size.height - 1 };
+    }
 
-    var row: usize = self.size.row;
-    var x: usize = self.size.col;
+    // TODO: change assert to if
+    std.debug.assert(self.rect.h + self.rect.row < buf.size.height);
+    std.debug.assert(self.rect.w + self.rect.col < buf.size.width);
+
+    var row: usize = self.rect.row;
+    var x: usize = self.rect.col;
 
     // borders
     if (self.border) {
         buf.unsafeGetRef(x, row).*.value = chars.ULCorner;
         buf.unsafeGetRef(x, row).*.value = chars.ULCorner;
-        buf.unsafeGetRef(x + self.size.w, row).*.value = chars.URCorner;
+        buf.unsafeGetRef(x + self.rect.w, row).*.value = chars.URCorner;
 
-        buf.unsafeGetRef(x, self.size.h + self.size.row).*.value = chars.LLCorner;
-        buf.unsafeGetRef(x + self.size.w, self.size.h + self.size.row).*.value = chars.LRCorner;
+        buf.unsafeGetRef(x, self.rect.h + self.rect.row).*.value = chars.LLCorner;
+        buf.unsafeGetRef(x + self.rect.w, self.rect.h + self.rect.row).*.value = chars.LRCorner;
 
         row += 1;
 
         // vertical lines
-        while (row < self.size.h + self.size.row) : (row += 1) {
+        while (row < self.rect.h + self.rect.row) : (row += 1) {
             buf.unsafeGetRef(x, row).*.value = chars.VLine;
-            buf.unsafeGetRef(x + self.size.w, row).*.value = chars.VLine;
+            buf.unsafeGetRef(x + self.rect.w, row).*.value = chars.VLine;
         }
 
         // horizontal
         {
-            var col: usize = self.size.col + 1;
-            var y: usize = self.size.row;
+            var col: usize = self.rect.col + 1;
+            var y: usize = self.rect.row;
 
-            while (col < self.size.w + self.size.col) : (col += 1) {
+            while (col < self.rect.w + self.rect.col) : (col += 1) {
                 buf.unsafeGetRef(col, y).*.value = chars.HLine;
-                buf.unsafeGetRef(col, y + self.size.h).*.value = chars.HLine;
+                buf.unsafeGetRef(col, y + self.rect.h).*.value = chars.HLine;
             }
         }
     }
 
     // draw title
     if (self.title) |title| {
-        const start: usize = self.size.col + 1;
+        const start: usize = self.rect.col + 1;
         var col: usize = start;
-        while (col - start < title.len and col - start < self.size.w - 1) : (col += 1) {
-            var cell = buf.unsafeGetRef(col, self.size.row);
+        while (col - start < title.len and col - start < self.rect.w - 1) : (col += 1) {
+            var cell = buf.unsafeGetRef(col, self.rect.row);
             cell.*.value = title[col - start];
             cell.*.style = self.title_style;
         }
     }
 }
 
-pub fn size(self: *Self) Rect {
-    return self.size;
+pub fn _rect(self: *Self) *Rect {
+    return &self.rect;
 }
 
 pub fn widget(self: *Self) Widget {

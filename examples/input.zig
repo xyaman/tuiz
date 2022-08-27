@@ -6,6 +6,7 @@ const mibu = @import("mibu");
 const Terminal = tuiz.Terminal;
 const TextBox = tuiz.widget.TextBox;
 const Box = tuiz.widget.Box;
+const HStack = tuiz.widget.HStack;
 const events = tuiz.events;
 
 const RawTerm = mibu.term.RawTerm;
@@ -33,17 +34,33 @@ pub fn main() !void {
 
     var input = TextBox.init(.{
         .box = Box.init(.{
-            .size = .{ .col = 10, .row = 3, .w = 20, .h = 4 },
+            .rect = .{ .col = 10, .row = 3, .w = 20, .h = 4 },
             .title = " Input ",
         }),
     });
+
+    var empty = Box.init(.{ .title = " inside " });
+
+    const size = try mibu.term.getSize(0);
+    var stack = HStack{
+        .box = Box.init(.{
+            .title = " Stack ",
+            .rect = .{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 },
+            .layout = true,
+        }),
+        .children = &[_]HStack.Children{
+            .{ .widget = input.widget(), .factor = 2 },
+            .{ .widget = empty.widget(), .factor = 1 },
+        },
+    };
 
     var running = true;
     var text = std.ArrayList(u21).init(allocator);
     defer text.deinit();
 
-    while (running) {
+    // var input_widget = input.widget();
 
+    while (running) {
         // blocks thread until an event is received, or timeout is reached
         if (app.nextEventTimeout(timeout)) |event| {
             switch (event) {
@@ -56,12 +73,15 @@ pub fn main() !void {
                     .delete => _ = text.popOrNull(),
                     else => {},
                 },
+                .resize => {
+                    try app.resize();
+                },
                 else => {},
             }
         }
 
         input.text = text.items;
-        app.drawWidget(input.widget());
+        app.drawWidget(stack.widget());
         try app.flush(stdout.writer());
     }
     input.text = null;

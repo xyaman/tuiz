@@ -101,6 +101,10 @@ pub const Terminal = struct {
         if (self.needs_clean) {
             try out.print("{s}", .{clear.print.all});
             self.needs_clean = false;
+
+            for (self.buffers) |*buffer| {
+                buffer.*.size_changed = false;
+            }
         }
 
         const current_buffer = &self.buffers[self.current];

@@ -17,7 +17,7 @@ const Widget = @This();
 
 ptr: *anyopaque,
 drawFn: fn (*anyopaque, *Buffer) void,
-sizeFn: fn (*anyopaque) Rect,
+rectFn: fn (*anyopaque) *Rect,
 
 pub fn make(ptr: anytype) Widget {
     const Ptr = @TypeOf(ptr);
@@ -35,17 +35,17 @@ pub fn make(ptr: anytype) Widget {
             return @call(.{ .modifier = .always_inline }, ptr_info.Pointer.child.draw, .{ self, buffer });
         }
 
-        pub fn sizeImpl(pointer: *anyopaque) Rect {
+        pub fn rectImpl(pointer: *anyopaque) *Rect {
             const self = @ptrCast(Ptr, @alignCast(alignment, pointer));
 
-            return @call(.{ .modifier = .always_inline }, ptr_info.Pointer.child.size, .{self});
+            return @call(.{ .modifier = .always_inline }, ptr_info.Pointer.child._rect, .{self});
         }
     };
 
     return .{
         .ptr = ptr,
         .drawFn = gen.drawImpl,
-        .sizeFn = gen.sizeImpl,
+        .rectFn = gen.rectImpl,
     };
 }
 
@@ -53,8 +53,8 @@ pub fn draw(widget: Widget, buffer: *Buffer) void {
     widget.drawFn(widget.ptr, buffer);
 }
 
-pub fn size(widget: Widget) Rect {
-    return widget.sizeFn(widget.ptr);
+pub fn rect(widget: Widget) *Rect {
+    return widget.rectFn(widget.ptr);
 }
 
 test "refAllDecls" {

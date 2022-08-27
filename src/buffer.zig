@@ -1,6 +1,7 @@
 const std = @import("std");
 const ArrayList = std.ArrayList;
 
+const Terminal = @import("terminal.zig");
 const TextStyle = @import("style.zig").TextStyle;
 
 const mibu = @import("mibu");
@@ -16,6 +17,7 @@ pub const Cell = struct {
 /// Represents screen (2D)
 pub const Buffer = struct {
     size: mibu.term.TermSize,
+    size_changed: bool = true,
 
     inner: []Cell,
     allocator: std.mem.Allocator,
@@ -72,6 +74,7 @@ pub const Buffer = struct {
         // size changed
         if (new_size.width != self.size.width or new_size.height != self.size.height) {
             self.size = new_size;
+            self.size_changed = true;
 
             var old_inner = self.inner;
             defer self.allocator.free(old_inner);
@@ -84,6 +87,8 @@ pub const Buffer = struct {
 
         return false;
     }
+
+    // pub inline fn sizeChanged(self: *Self) bool {
 
     pub const BufDiff = struct {
         x: usize,

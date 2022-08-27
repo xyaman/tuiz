@@ -29,7 +29,7 @@ pub fn main() !void {
     // No autolayout yet
     var size = try mibu.term.getSize(0);
     var box = Box.init(.{
-        .size = .{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 },
+        .rect = .{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 },
         .title = " Hello World ",
         .title_style = .bold,
     });
@@ -56,7 +56,7 @@ pub fn main() !void {
                 .resize => {
                     try term.resize();
                     size = try mibu.term.getSize(0);
-                    _ = box.setSize(.{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 });
+                    box.rect = .{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 };
                 },
                 else => {},
             }

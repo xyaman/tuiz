@@ -20,7 +20,7 @@ pub fn build(b: *std.build.Builder) void {
     test_step.dependOn(&main_tests.step);
 
     // examples
-    const examples = [_][]const u8{ "box", "input" };
+    const examples = [_][]const u8{ "basic", "input" };
 
     for (examples) |example| {
         const exec = b.addExecutable(example, std.fmt.allocPrint(b.allocator, "examples/{s}.zig", .{example}) catch unreachable);
