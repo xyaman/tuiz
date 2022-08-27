@@ -6,7 +6,7 @@ const mibu = @import("mibu");
 const Terminal = tuiz.Terminal;
 const TextBox = tuiz.widget.TextBox;
 const Box = tuiz.widget.Box;
-const HStack = tuiz.widget.HStack;
+const Stack = tuiz.widget.Stack;
 const events = tuiz.events;
 
 const RawTerm = mibu.term.RawTerm;
@@ -42,13 +42,14 @@ pub fn main() !void {
     var empty = Box.init(.{ .title = " inside " });
 
     const size = try mibu.term.getSize(0);
-    var stack = HStack{
+    var stack = Stack{
         .box = Box.init(.{
             .title = " Stack ",
             .rect = .{ .col = 0, .row = 0, .w = size.width - 1, .h = size.height - 1 },
             .layout = true,
         }),
-        .children = &[_]HStack.Children{
+        .orientation = .vertical,
+        .children = &[_]Stack.Children{
             .{ .widget = input.widget(), .factor = 2 },
             .{ .widget = empty.widget(), .factor = 1 },
         },
@@ -84,5 +85,4 @@ pub fn main() !void {
         app.drawWidget(stack.widget());
         try app.flush(stdout.writer());
     }
-    input.text = null;
 }
