@@ -32,14 +32,14 @@ pub fn draw(self: *Self, buf: *Buffer) void {
     const scaled = (self.box.rect.w - self.children.len) / total_factor;
     var cursor = self.box.rect.col + 1;
     for (self.children) |child| {
-        child.widget.rect().*.w = child.factor * scaled;
-        child.widget.rect().*.h = self.box.rect.h - 2;
-
-        child.widget.rect().*.col = cursor;
-        child.widget.rect().*.row = self.box.rect.row + 1;
+        child.widget.rect().* = .{
+            .w = child.factor * scaled,
+            .h = self.box.rect.h - 2,
+            .col = cursor,
+            .row = self.box.rect.row + 1,
+        };
 
         cursor += child.factor * scaled + 1;
-
         child.widget.draw(buf);
     }
 }
